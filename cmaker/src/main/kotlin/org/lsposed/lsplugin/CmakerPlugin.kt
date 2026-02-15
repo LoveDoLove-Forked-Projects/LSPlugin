@@ -55,11 +55,9 @@ private open class CmakerExtensionImpl(private val project: Project) : CmakerExt
     fun Project.applyDefault(action: CmakeFlags.() -> Unit) {
         plugins.withType(AndroidBasePlugin::class.java) {
             extensions.configure(CommonExtension::class.java) {
-                defaultConfig {
-                    externalNativeBuild {
-                        cmake {
-                            action()
-                        }
+                defaultConfig.externalNativeBuild {
+                    cmake {
+                        action()
                     }
                 }
             }
@@ -121,12 +119,10 @@ private open class CmakerExtensionImpl(private val project: Project) : CmakerExt
     fun Project.applyBuildTypes(action: CmakeFlags.(BuildType) -> Unit) {
         plugins.withType(AndroidBasePlugin::class.java) {
             extensions.configure(CommonExtension::class.java) {
-                buildTypes {
-                    all {
-                        externalNativeBuild {
-                            cmake {
-                                action(this@all)
-                            }
+                buildTypes.all {
+                    externalNativeBuild {
+                        cmake {
+                            action(this@all)
                         }
                     }
                 }
