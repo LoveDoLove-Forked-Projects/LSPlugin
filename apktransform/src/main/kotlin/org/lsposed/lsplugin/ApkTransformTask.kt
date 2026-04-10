@@ -2,7 +2,6 @@ package org.lsposed.lsplugin
 
 import com.android.build.api.artifact.ArtifactTransformationRequest
 import com.android.build.api.variant.BuiltArtifact
-import com.android.build.api.variant.Variant
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property

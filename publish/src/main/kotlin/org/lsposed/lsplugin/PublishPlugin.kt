@@ -1,10 +1,8 @@
 package org.lsposed.lsplugin
 
-import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Action
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublicationContainer
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository
@@ -46,17 +44,21 @@ open class PublishExtensionImpl(private val project: Project) : PublishExtension
     override fun publications(artifactId: String, action: Action<in MavenPom>) {
         project.run {
             extensions.configure(CentralMavenPublishExtension::class.java) {
-                publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+                publishToMavenCentral()
                 findProperty("signingKey")?.let {
                     signAllPublications()
                 }
                 pom(action)
-                coordinates(artifactId=artifactId)
+                coordinates(artifactId = artifactId)
             }
         }
     }
 
-    override fun publishPlugin(artifactId: String, implementationClass: String, action: Action<in MavenPom>) {
+    override fun publishPlugin(
+        artifactId: String,
+        implementationClass: String,
+        action: Action<in MavenPom>
+    ) {
         project.run {
             publications(artifactId, action)
             plugins.withType(JavaGradlePluginPlugin::class.java) {
@@ -92,7 +94,12 @@ class PublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.subprojects {
             plugins.apply(CentralMavenPublishPlugin::class.java)
-            extensions.create(PublishExtensionImpl::class.java, "publish", PublishExtensionImpl::class.java, this)
+            extensions.create(
+                PublishExtensionImpl::class.java,
+                "publish",
+                PublishExtensionImpl::class.java,
+                this
+            )
             extra.set("signingInMemoryKey", findProperty("signingKey") as String?)
             extra.set("signingInMemoryKeyPassword", findProperty("signingPassword") as String?)
         }

@@ -6,7 +6,6 @@ import com.android.build.gradle.api.AndroidBasePlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileSystemOperations
-import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.process.ExecOperations
 import java.nio.file.Paths
@@ -31,9 +30,9 @@ class ResoptPlugin : Plugin<Project> {
                     val aapt2 = Paths.get(
                         sdkComponents.sdkDirectory.get().toString(), "build-tools", ext.buildToolsVersion, "aapt2"
                     )
-                    val workdir = Paths.get(
-                        project.buildDir.path, "intermediates", "optimized_processed_res", name, "optimize${name.replaceFirstChar { it.uppercase() }}Resources"
-                    ).toFile()
+                    val workdir = project.layout.buildDirectory.dir(
+                        "intermediates/optimized_processed_res/$name/optimize${name.replaceFirstChar { it.uppercase() }}Resources"
+                    )
                     val zip =
                         if (variant.flavorName.isNullOrEmpty()) "resources-${variant.buildType}-optimize.ap_" else "resources-${variant.flavorName}-${variant.buildType}-optimize.ap_"
                     val optimized = "$zip.opt"
@@ -50,17 +49,17 @@ class ResoptPlugin : Plugin<Project> {
                                     optimized,
                                     zip
                                 )
-                                workingDir = workdir
+                                workingDir = workdir.get().asFile
                                 isIgnoreExitValue = true
                             }
                             if (cmd.exitValue == 0) {
                                 injected.fs.copy {
-                                    from(workdir.resolve(optimized))
+                                    from(workdir.map { it.file(optimized) })
                                     rename { zip }
                                     into(workdir)
                                 }
                                 injected.fs.delete {
-                                    delete(workdir.resolve(optimized))
+                                    delete(workdir.map { it.file(optimized) })
                                 }
                             } else {
                                 println("Failed to optimize $name resources")
